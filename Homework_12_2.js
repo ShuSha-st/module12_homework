@@ -6,11 +6,7 @@
 */
 
 function objectStr(str, obj){
-    let flag = false;
-    if (str in obj) {
-        flag = true
-    }
-    return flag
+    return str in obj
 }
 
 const obj1 = {a: 1, b: 2, c:3};
@@ -22,3 +18,5 @@ obj2.color = "blue";
 
 const strin = 'color';
 console.log(objectStr(strin, obj2));
+
+// Решение верное, но функцию можно было записать короче, выше в коде исправила

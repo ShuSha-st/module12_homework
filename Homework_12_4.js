@@ -10,7 +10,35 @@
 function Electrodevice(name) {
     this.type = 'electrical appliance',
         this.subtype = 'household',
-        this.name = name
+        this.name = name,
+        this.status = false // свойство, отвечающее за вкл\выкл. По умолчанию все приборы сначала выключены
+}
+
+let devicesOn = 0; // кол-во включенных приборов
+let powerConsumption = 0; // потребляемая включенными приборами энергия
+
+/* Функция button, которая "включает/ выключает" приборы в сети
+и позволяет рассчитывать требуемую мощность сети*/
+Electrodevice.prototype.button = function () {
+    if (this.status) {
+        this.status = false;
+        devicesOn--;
+        powerConsumption -= this.power;
+        console.log(`От сети отключен электроприбор ${this.name}`);
+    } else {
+        this.status = true;
+        devicesOn++;
+        powerConsumption += this.power;
+        console.log(`В сеть включен электроприбор ${this.name}`);
+    }
+}
+
+Electrodevice.prototype.networkInfo = () => {
+    if (devicesOn > 0) {
+        console.log(`В сети ${devicesOn} электроприбор(а), которые потребляют ${powerConsumption} Ватт энергии`)
+    } else {
+        console.log(`В сети нет включенных приборов`)
+    }
 }
 
 function HomeDevice(name, power) {
@@ -27,24 +55,19 @@ const fridge = new HomeDevice ('fridge', 300);
 const cleaner = new HomeDevice ('cleaner', 550);
 const tvset = new HomeDevice ('tvset', 130);
 
-/* Функция button, которая "включает/ выключает" приборы в сети
-и позволяет рассчитывать требуемую мощность сети*/
-HomeDevice.prototype.button = function (flag, numm) {
-    let c = 0;
-    if (flag === 'on') {
-        c=1;
-        console.log(`В сети ${numm} электроприбор(а) ${this.name}, которые потребляют ${c*this.power*numm} Ватт энергии`)
-    } else {
-        console.log(`От сети отключен электроприбор ${this.name}`)
-    }
-    return c*this.power*numm
-}
 //console.log(fridge, cleaner, tvset);
 
-fridge.getInfo();
+fridge.networkInfo();
+fridge.button();
+cleaner.button();
+tvset.button();
+tvset.networkInfo();
+fridge.button();
+fridge.networkInfo();
 
-const status1 = fridge.button('on', 2);
-const status2 = cleaner.button('on', 1);
-const status3 = tvset.button('off', 3);
 
-console.log(`Совокупная потребляемая энергия приборов ${status1 + status2 + status3} Ватт`)
+// Частично верно, но есть несколько замечаний:
+// 1. Метод button, который включает\выключает прибор, должен относиться к родительскому классу Electrodevice, потому что включение\выключение это метод, который разделяют все электроприборы, не только домашние (имею в виду конструктор HomeDevice)
+// 2. Было бы логичнее если бы в методе button значение свойства flag не передавалось извне, а бралось из свойств прибора, т.к. состояние вкл\выкл - это свойство, имеющее отношение именно к прибору. Будет правильнее, если при "нажатии" кнопки прибор будет выключаться, если он включен и включаться, если выключен
+// 3. Не совсем понятна логика метода button, не ясно, откуда вы берете количество приборов, включенных в сеть. Если считаете вручную, то это не универсальное решение и при большом количестве приборов вы быстро запутаетесь, сколько включено, а сколько выключено. Нужно сделать переменную счетчик и автоматизировать подсчет устройств. Также я бы разделила эту функцию на 2 - одна для включения\выключения, а вторая для вывода кол-ва включенных устройств. Лучше, когда каждый метод решает одну конкретную задачу. Проблема текущего решения, например, в том, что вы не можете узнать кол-во включенных приборов, не включив или не выключив один из них.
+// Выше в коде исправила
